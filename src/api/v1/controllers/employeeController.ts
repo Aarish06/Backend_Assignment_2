@@ -43,15 +43,4 @@ export const employeeController = {
       : res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Employee not found" });
   },
 
-  getByBranchId: (req: Request, res: Response) => {
-    const branchId = Number(req.params.branchId);
-    if (!branchId) return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "Invalid branch ID" });
-    res.json(employeeService.getByBranchId(branchId));
-  },
-
-  getByDepartment: (req: Request, res: Response) => {
-    const { department } = req.params;
-    if (!department) return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "Department is required" });
-    res.json(employeeService.getByDepartment(department));
-  },
 };
