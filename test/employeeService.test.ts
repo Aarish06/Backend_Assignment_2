@@ -7,154 +7,217 @@ beforeEach(() => {
 });
 
 describe("Employee API", () => {
-  it("should create a new employee", async () => {
-    const res = await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
+  describe("POST /api/v1/employees", () => {
+    it("should create a new employee with valid data", async () => {
+      // Arrange
+      const employeeData = {
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      };
+
+      // Act
+      const res = await request(app).post("/api/v1/employees").send(employeeData);
+
+      // Assert
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty("id");
+      expect(res.body.name).toBe("Alice Johnson");
     });
 
-    expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("id");
-    expect(res.body.name).toBe("Alice Johnson");
-  });
+    it("should fail to create an employee with missing fields", async () => {
+      // Arrange
+      const invalidData = { name: "Bob" };
 
-  it("should fail to create employee with missing fields", async () => {
-    const res = await request(app).post("/api/v1/employees").send({
-      name: "Bob",
+      // Act
+      const res = await request(app).post("/api/v1/employees").send(invalidData);
+
+      // Assert
+      expect(res.status).toBe(400);
     });
-    expect(res.status).toBe(400);
   });
 
-  it("should get all employees as an array", async () => {
-    await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
+  describe("GET /api/v1/employees", () => {
+    it("should return all employees as an array", async () => {
+      // Arrange
+      await request(app).post("/api/v1/employees").send({
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      });
+
+      // Act
+      const res = await request(app).get("/api/v1/employees");
+
+      // Assert
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(1);
     });
-    const res = await request(app).get("/api/v1/employees");
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(1);
   });
 
-  it("should get employee by ID", async () => {
-    const created = await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
+  describe("GET /api/v1/employees/:id", () => {
+    it("should return employee by ID", async () => {
+      // Arrange
+      const created = await request(app).post("/api/v1/employees").send({
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      });
+
+      // Act
+      const res = await request(app).get(`/api/v1/employees/${created.body.id}`);
+
+      // Assert
+      expect(res.status).toBe(200);
+      expect(res.body.name).toBe("Alice Johnson");
     });
-    const res = await request(app).get(`/api/v1/employees/${created.body.id}`);
-    expect(res.status).toBe(200);
-    expect(res.body.name).toBe("Alice Johnson");
   });
 
-  it("should update employee", async () => {
-    const created = await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
-    });
-    const res = await request(app)
-      .put(`/api/v1/employees/${created.body.id}`)
-      .send({ position: "Senior Manager" });
-    expect(res.status).toBe(200);
-    expect(res.body.position).toBe("Senior Manager");
-  });
+  describe("PUT /api/v1/employees/:id", () => {
+    it("should update an existing employee", async () => {
+      // Arrange
+      const created = await request(app).post("/api/v1/employees").send({
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      });
 
-  it("should return 404 if updating non-existent employee", async () => {
-    const res = await request(app).put("/api/v1/employees/999").send({
-      position: "Updated",
-    });
-    expect(res.status).toBe(404);
-  });
+      // Act
+      const res = await request(app)
+        .put(`/api/v1/employees/${created.body.id}`)
+        .send({ position: "Senior Manager" });
 
-  it("should delete employee", async () => {
-    const created = await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
-    });
-    const res = await request(app).delete(`/api/v1/employees/${created.body.id}`);
-    expect(res.status).toBe(200);
-    expect(res.body).toEqual({ message: "Employee deleted successfully" });
-  });
-
-  it("should return 404 when deleting non-existent employee", async () => {
-    const res = await request(app).delete("/api/v1/employees/999");
-    expect(res.status).toBe(404);
-  });
-
-  it("should get all employees for a branch", async () => {
-    await request(app).post("/api/v1/employees").send({
-      name: "Alice Johnson",
-      position: "Manager",
-      department: "Management",
-      email: "alice@example.com",
-      phone: "123-456-7890",
-      branchId: 1,
-    });
-    await request(app).post("/api/v1/employees").send({
-      name: "Bob Smith",
-      position: "Clerk",
-      department: "Customer Service",
-      email: "bob@example.com",
-      phone: "987-654-3210",
-      branchId: 1,
+      // Assert
+      expect(res.status).toBe(200);
+      expect(res.body.position).toBe("Senior Manager");
     });
 
-    const res = await request(app).get("/api/v1/employees/branch/1");
-    expect(res.status).toBe(200);
-    expect(res.body.length).toBe(2);
-    expect(res.body[0]).toHaveProperty("branchId", 1);
-  });
+    it("should return 404 if updating non-existent employee", async () => {
+      // Arrange & Act
+      const res = await request(app).put("/api/v1/employees/999").send({
+        position: "Updated",
+      });
 
-  it("should return 400 if branchId param is missing", async () => {
-    const res = await request(app).get("/api/v1/employees/branch/");
-    expect(res.status).toBe(400);
-  });
-
-  it("should get all employees in a department", async () => {
-    await request(app).post("/api/v1/employees").send({
-      name: "Charlie",
-      position: "Loan Officer",
-      department: "Loans",
-      email: "charlie@example.com",
-      phone: "555-555-5555",
-      branchId: 2,
+      // Assert
+      expect(res.status).toBe(404);
     });
-    await request(app).post("/api/v1/employees").send({
-      name: "Daisy",
-      position: "Loan Clerk",
-      department: "Loans",
-      email: "daisy@example.com",
-      phone: "444-444-4444",
-      branchId: 3,
-    });
-
-    const res = await request(app).get("/api/v1/employees/department/Loans");
-    expect(res.status).toBe(200);
-    expect(res.body.length).toBe(2);
-    expect(res.body[0]).toHaveProperty("department", "Loans");
   });
 
-  it("should return 400 if department param is missing", async () => {
-    const res = await request(app).get("/api/v1/employees/department/");
-    expect(res.status).toBe(400);
+  describe("DELETE /api/v1/employees/:id", () => {
+    it("should delete an existing employee", async () => {
+      // Arrange
+      const created = await request(app).post("/api/v1/employees").send({
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      });
+
+      // Act
+      const res = await request(app).delete(`/api/v1/employees/${created.body.id}`);
+
+      // Assert
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ message: "Employee deleted successfully" });
+    });
+
+    it("should return 404 when deleting non-existent employee", async () => {
+      // Arrange & Act
+      const res = await request(app).delete("/api/v1/employees/999");
+
+      // Assert
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe("GET /api/v1/employees/branch/:branchId", () => {
+    it("should return all employees for a branch", async () => {
+      // Arrange
+      await request(app).post("/api/v1/employees").send({
+        name: "Alice Johnson",
+        position: "Manager",
+        department: "Management",
+        email: "alice@example.com",
+        phone: "123-456-7890",
+        branchId: 1,
+      });
+      await request(app).post("/api/v1/employees").send({
+        name: "Bob Smith",
+        position: "Clerk",
+        department: "Customer Service",
+        email: "bob@example.com",
+        phone: "987-654-3210",
+        branchId: 1,
+      });
+
+      // Act
+      const res = await request(app).get("/api/v1/employees/branch/1");
+
+      // Assert
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBe(2);
+      expect(res.body[0]).toHaveProperty("branchId", 1);
+    });
+
+    it("should return 400 if branchId param is missing", async () => {
+      // Arrange & Act
+      const res = await request(app).get("/api/v1/employees/branch/");
+
+      // Assert
+      expect(res.status).toBe(400);
+    });
+  });
+
+  describe("GET /api/v1/employees/department/:department", () => {
+    it("should return all employees in a department", async () => {
+      // Arrange
+      await request(app).post("/api/v1/employees").send({
+        name: "Charlie",
+        position: "Loan Officer",
+        department: "Loans",
+        email: "charlie@example.com",
+        phone: "555-555-5555",
+        branchId: 2,
+      });
+      await request(app).post("/api/v1/employees").send({
+        name: "Daisy",
+        position: "Loan Clerk",
+        department: "Loans",
+        email: "daisy@example.com",
+        phone: "444-444-4444",
+        branchId: 3,
+      });
+
+      // Act
+      const res = await request(app).get("/api/v1/employees/department/Loans");
+
+      // Assert
+      expect(res.status).toBe(200);
+      expect(res.body.length).toBe(2);
+      expect(res.body[0]).toHaveProperty("department", "Loans");
+    });
+
+    it("should return 400 if department param is missing", async () => {
+      // Arrange & Act
+      const res = await request(app).get("/api/v1/employees/department/");
+
+      // Assert
+      expect(res.status).toBe(400);
+    });
   });
 });

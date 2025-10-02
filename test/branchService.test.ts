@@ -5,44 +5,71 @@ beforeEach(() => {
 });
 
 describe("BranchService", () => {
-  it("should create a branch", () => {
-    const branch = branchService.create({
-      name: "Test Branch",
-      address: "123 Test St",
-      phone: "111-222-3333",
+  describe("create", () => {
+    it("should create a branch with valid data", () => {
+      // Arrange
+      const data = { name: "Test Branch", address: "123 Test St", phone: "111-222-3333" };
+
+      // Act
+      const branch = branchService.create(data);
+
+      // Assert
+      expect(branch).toHaveProperty("id");
+      expect(branch.name).toBe("Test Branch");
     });
-
-    expect(branch).toHaveProperty("id");
-    expect(branch.name).toBe("Test Branch");
   });
 
-  it("should get all branches", () => {
-    branchService.create({ name: "B1", address: "A1", phone: "111" });
-    branchService.create({ name: "B2", address: "A2", phone: "222" });
+  describe("getAll", () => {
+    it("should return all branches", () => {
+      // Arrange
+      branchService.create({ name: "B1", address: "A1", phone: "111" });
+      branchService.create({ name: "B2", address: "A2", phone: "222" });
 
-    const branches = branchService.getAll();
-    expect(branches.length).toBe(2);
+      // Act
+      const branches = branchService.getAll();
+
+      // Assert
+      expect(branches.length).toBe(2);
+    });
   });
 
-  it("should get branch by id", () => {
-    const branch = branchService.create({ name: "B1", address: "A1", phone: "111" });
-    const found = branchService.getById(branch.id);
+  describe("getById", () => {
+    it("should return a branch by id", () => {
+      // Arrange
+      const branch = branchService.create({ name: "B1", address: "A1", phone: "111" });
 
-    expect(found).toEqual(branch);
+      // Act
+      const found = branchService.getById(branch.id);
+
+      // Assert
+      expect(found).toEqual(branch);
+    });
   });
 
-  it("should update a branch", () => {
-    const branch = branchService.create({ name: "Old", address: "A", phone: "111" });
-    const updated = branchService.update(branch.id, { name: "New" });
+  describe("update", () => {
+    it("should update a branch with new values", () => {
+      // Arrange
+      const branch = branchService.create({ name: "Old", address: "A", phone: "111" });
 
-    expect(updated?.name).toBe("New");
+      // Act
+      const updated = branchService.update(branch.id, { name: "New" });
+
+      // Assert
+      expect(updated?.name).toBe("New");
+    });
   });
 
-  it("should delete a branch", () => {
-    const branch = branchService.create({ name: "Delete", address: "A", phone: "111" });
-    const deleted = branchService.delete(branch.id);
+  describe("delete", () => {
+    it("should delete a branch by id", () => {
+      // Arrange
+      const branch = branchService.create({ name: "Delete", address: "A", phone: "111" });
 
-    expect(deleted).toBe(true);
-    expect(branchService.getById(branch.id)).toBeUndefined();
+      // Act
+      const deleted = branchService.delete(branch.id);
+
+      // Assert
+      expect(deleted).toBe(true);
+      expect(branchService.getById(branch.id)).toBeUndefined();
+    });
   });
 });

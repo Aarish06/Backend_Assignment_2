@@ -34,7 +34,7 @@ export const employeeService = {
     employees = [];
     currentId = 1;
   },
-getByBranchId: (branchId: number): Employee[] =>
+  getByBranchId: (branchId: number): Employee[] =>
     employees.filter(e => e.branchId === branchId),
 
   getByDepartment: (department: string): Employee[] =>

@@ -13,28 +13,38 @@ describe("Branch Controller", () => {
     };
   });
 
-  it("should return 400 if required fields are missing on create", () => {
-    req.body = {};
-    branchController.create(req as Request, res as Response);
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ error: "Missing required fields" });
-  });
+  describe("create", () => {
+    it("should return 400 if required fields are missing", () => {
+      // Arrange
+      req.body = {};
 
-  it("should create a branch with valid data", () => {
-    req.body = {
-      name: "Downtown Branch",
-      address: "123 Main St",
-      phone: "9876543210",
-    };
+      // Act
+      branchController.create(req as Request, res as Response);
 
-    branchController.create(req as Request, res as Response);
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({ error: "Missing required fields" });
+    });
 
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(
-      expect.objectContaining({
+    it("should create a branch with valid data", () => {
+      // Arrange
+      req.body = {
         name: "Downtown Branch",
         address: "123 Main St",
-      })
-    );
+        phone: "9876543210",
+      };
+
+      // Act
+      branchController.create(req as Request, res as Response);
+
+      // Assert
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Downtown Branch",
+          address: "123 Main St",
+        })
+      );
+    });
   });
 });
