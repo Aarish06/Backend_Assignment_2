@@ -99,4 +99,33 @@ describe("Employee API", () => {
     const res = await request(app).delete("/api/v1/employees/999");
     expect(res.status).toBe(404);
   });
+  
+  it("should get all employees for a branch", async () => {
+    await request(app).post("/api/v1/employees").send({
+      name: "Alice Johnson",
+      position: "Manager",
+      department: "Management",
+      email: "alice@example.com",
+      phone: "123-456-7890",
+      branchId: 1,
+    });
+    await request(app).post("/api/v1/employees").send({
+      name: "Bob Smith",
+      position: "Clerk",
+      department: "Customer Service",
+      email: "bob@example.com",
+      phone: "987-654-3210",
+      branchId: 1,
+    });
+
+    const res = await request(app).get("/api/v1/employees/branch/1");
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(2);
+    expect(res.body[0]).toHaveProperty("branchId", 1);
+  });
+
+  it("should return 400 if branchId param is missing", async () => {
+    const res = await request(app).get("/api/v1/employees/branch/");
+    expect(res.status).toBe(400);
+  });
 });
