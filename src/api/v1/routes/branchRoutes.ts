@@ -10,3 +10,4 @@ router.put("/:id", branchController.update);
 router.delete("/:id", branchController.delete);
 
 export default router;
+

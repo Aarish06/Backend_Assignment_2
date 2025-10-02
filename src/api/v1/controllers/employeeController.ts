@@ -25,6 +25,7 @@ export const employeeController = {
       : res.status(HTTP_STATUS.NOT_FOUND).json({ error: "Employee not found" });
   },
 
+
   update: (req: Request, res: Response) => {
     const id = Number(req.params.id);
     if (!id) return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: "Invalid ID" });
@@ -48,6 +49,7 @@ export const employeeController = {
     ? res.json(employeeService.getByBranchId(branchId))
     : res.status(400).json({ error: "Invalid branch ID" });
 },
+
 
  getByDepartment: (req: Request, res: Response) => {
   const { department } = req.params;
