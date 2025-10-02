@@ -1,5 +1,6 @@
 import express from "express";
 import morgan from "morgan";
+import employeeRoutes from "./api/v1/routes/employeeRoutes";
 
 const app = express();
 
@@ -19,4 +20,5 @@ app.get("/health", (req, res) => {
         text: "Server is healthy"});
 });
 
+app.use("/api/v1/employees", employeeRoutes);
 export default app;
