@@ -99,7 +99,7 @@ describe("Employee API", () => {
     const res = await request(app).delete("/api/v1/employees/999");
     expect(res.status).toBe(404);
   });
-  
+
   it("should get all employees for a branch", async () => {
     await request(app).post("/api/v1/employees").send({
       name: "Alice Johnson",
@@ -126,6 +126,35 @@ describe("Employee API", () => {
 
   it("should return 400 if branchId param is missing", async () => {
     const res = await request(app).get("/api/v1/employees/branch/");
+    expect(res.status).toBe(400);
+  });
+
+  it("should get all employees in a department", async () => {
+    await request(app).post("/api/v1/employees").send({
+      name: "Charlie",
+      position: "Loan Officer",
+      department: "Loans",
+      email: "charlie@example.com",
+      phone: "555-555-5555",
+      branchId: 2,
+    });
+    await request(app).post("/api/v1/employees").send({
+      name: "Daisy",
+      position: "Loan Clerk",
+      department: "Loans",
+      email: "daisy@example.com",
+      phone: "444-444-4444",
+      branchId: 3,
+    });
+
+    const res = await request(app).get("/api/v1/employees/department/Loans");
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBe(2);
+    expect(res.body[0]).toHaveProperty("department", "Loans");
+  });
+
+  it("should return 400 if department param is missing", async () => {
+    const res = await request(app).get("/api/v1/employees/department/");
     expect(res.status).toBe(400);
   });
 });
