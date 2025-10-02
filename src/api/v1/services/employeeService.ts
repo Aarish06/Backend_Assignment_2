@@ -34,5 +34,9 @@ export const employeeService = {
     employees = [];
     currentId = 1;
   },
+getByBranchId: (branchId: number): Employee[] =>
+    employees.filter(e => e.branchId === branchId),
 
+  getByDepartment: (department: string): Employee[] =>
+    employees.filter(e => e.department.toLowerCase() === department.toLowerCase()),
 };
