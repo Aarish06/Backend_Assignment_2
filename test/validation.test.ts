@@ -1,4 +1,5 @@
 import { employeeSchemas } from "../src/api/v1/validation/employeeValidation";
+import { branchSchemas } from "../src/api/v1/validation/branchValidation";
 
 describe("Employee Schemas", () => {
   test("create valid and invalid", () => {
@@ -29,5 +30,32 @@ describe("Employee Schemas", () => {
   test("getByDepartment", () => {
     expect(employeeSchemas.getByDepartment.params.validate({ department: "Finance" }).error).toBeUndefined();
     expect(employeeSchemas.getByDepartment.params.validate({ department: "" }).error).toBeDefined();
+  });
+});
+
+describe("Branch Schemas", () => {
+  test("create valid and invalid", () => {
+    expect(branchSchemas.create.body.validate({
+      name: "Downtown", address: "123 Main St", phone: "204-555-7890"
+    }).error).toBeUndefined();
+
+    expect(branchSchemas.create.body.validate({
+      name: "A", address: "", phone: "123"
+    }).error).toBeDefined();
+  });
+
+  test("update valid and invalid", () => {
+    expect(branchSchemas.update.body.validate({ name: "Uptown", phone: "2045551234" }).error).toBeUndefined();
+    expect(branchSchemas.update.body.validate({ phone: "abc" }).error).toBeDefined();
+  });
+
+  test("getById", () => {
+    expect(branchSchemas.getById.params.validate({ id: 10 }).error).toBeUndefined();
+    expect(branchSchemas.getById.params.validate({ id: "bad" }).error).toBeDefined();
+  });
+
+  test("delete", () => {
+    expect(branchSchemas.delete.params.validate({ id: 5 }).error).toBeUndefined();
+    expect(branchSchemas.delete.params.validate({ id: null }).error).toBeDefined();
   });
 });
