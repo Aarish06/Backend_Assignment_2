@@ -33,9 +33,7 @@ export const successResponse = <T>(
  * @returns The error response object
  */
 export const errorResponse = (
-    message: string,
-    code?: string
-): ApiResponse<null> => ({
+res: unknown, message: string, BAD_REQUEST: number, code?: string): ApiResponse<null> => ({
     status: "error",
     error: message,
     code,
