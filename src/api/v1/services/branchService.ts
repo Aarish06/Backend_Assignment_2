@@ -1,37 +1,64 @@
 import { Branch } from "../models/branchModel";
-import { branches as seedBranches } from "../../../data/branches";
+import {
+  createDocument,
+  getDocuments,
+  getDocumentById,
+  updateDocument,
+  deleteDocument,
+} from "../repositories/firestoreRepository";
 
-let branches: Branch[] = [...seedBranches];
-let currentId = branches.length ? Math.max(...branches.map(b => b.id)) + 1 : 1;
+const COLLECTION = "branches";
 
 export const branchService = {
-  create: (data: Omit<Branch, "id">): Branch => {
-    const branch = { id: currentId++, ...data };
-    branches.push(branch);
-    return branch;
+  // CREATE
+  create: async (data: Omit<Branch, "id">): Promise<Branch> => {
+    const id = await createDocument<Omit<Branch, "id">>(COLLECTION, data);
+    const createdDoc = await getDocumentById(COLLECTION, id);
+
+    if (!createdDoc || !createdDoc.exists) {
+      throw new Error("Failed to retrieve created branch");
+    }
+
+    const createdData = createdDoc.data() as Omit<Branch, "id">;
+    return { id: Number(id), ...createdData };
   },
 
-  getAll: (): Branch[] => branches,
-
-  getById: (id: number): Branch | undefined =>
-    branches.find(b => b.id === id),
-
-  update: (id: number, data: Partial<Branch>): Branch | null => {
-    const branch = branches.find(b => b.id === id);
-    if (!branch) return null;
-    Object.assign(branch, data);
-    return branch;
+  // GET ALL
+  getAll: async (): Promise<Branch[]> => {
+    const snapshot = await getDocuments(COLLECTION);
+    return snapshot.docs.map((doc) => {
+      const data = doc.data() as Omit<Branch, "id">;
+      return { id: Number(doc.id), ...data };
+    });
   },
 
-  delete: (id: number): boolean => {
-    const index = branches.findIndex(b => b.id === id);
-    if (index < 0) return false;
-    branches.splice(index, 1);
+  // GET BY ID
+  getById: async (id: string): Promise<Branch | null> => {
+    const doc = await getDocumentById(COLLECTION, id);
+    if (!doc || !doc.exists) return null;
+    const data = doc.data() as Omit<Branch, "id">;
+    return { id: Number(id), ...data };
+  },
+
+  // UPDATE
+  update: async (id: string, data: Partial<Branch>): Promise<Branch | null> => {
+    const existingDoc = await getDocumentById(COLLECTION, id);
+    if (!existingDoc || !existingDoc.exists) return null;
+
+    await updateDocument<Branch>(COLLECTION, id, data);
+    const updatedDoc = await getDocumentById(COLLECTION, id);
+    if (!updatedDoc || !updatedDoc.exists) return null;
+
+    const updatedData = updatedDoc.data() as Omit<Branch, "id">;
+    return { id: Number(id), ...updatedData };
+  },
+
+  // DELETE
+  delete: async (id: string): Promise<boolean> => {
+    const doc = await getDocumentById(COLLECTION, id);
+    if (!doc || !doc.exists) return false;
+
+    await deleteDocument(COLLECTION, id);
     return true;
-  },
-
-  reset: (): void => {
-    branches = [];
-    currentId = 1;
   },
 };
