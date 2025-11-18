@@ -1,6 +1,127 @@
 import Joi from "joi";
 
-// Multi-level schemas for employee operations
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     Employee:
+ *       type: object
+ *       description: Represents an employee in a branch/department
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: Unique identifier for the employee
+ *           example: 101
+ *         name:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 50
+ *           description: Full name of the employee
+ *           example: "Aarish Bansal"
+ *         position:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           description: Employee's job title or position
+ *           example: "Sales Associate"
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Employee's email address
+ *           example: "aarish@example.com"
+ *         phone:
+ *           type: string
+ *           description: Employee's phone number (supports international formats)
+ *           example: "+1-204-555-1234"
+ *         department:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           description: Department where the employee works
+ *           example: "Sales"
+ *         branchId:
+ *           type: integer
+ *           description: ID of the branch where the employee is assigned
+ *           example: 3
+ *       required:
+ *         - name
+ *         - position
+ *         - email
+ *         - phone
+ *         - department
+ *         - branchId
+ *
+ *     EmployeeCreate:
+ *       type: object
+ *       description: Payload used to create a new employee
+ *       required:
+ *         - name
+ *         - position
+ *         - email
+ *         - phone
+ *         - department
+ *         - branchId
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 50
+ *           example: "Aarish Bansal"
+ *         position:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: "Branch Manager"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "employee@example.com"
+ *         phone:
+ *           type: string
+ *           description: Valid phone number (e.g. +1-204-555-1234 or 2045551234)
+ *           example: "+1-431-555-9876"
+ *         department:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: "Human Resources"
+ *         branchId:
+ *           type: integer
+ *           description: Existing branch ID
+ *           example: 5
+ *
+ *     EmployeeUpdate:
+ *       type: object
+ *       description: Payload used to update an existing employee
+ *       properties:
+ *         name:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 50
+ *           example: "Updated Name"
+ *         position:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: "Senior Sales Associate"
+ *         email:
+ *           type: string
+ *           format: email
+ *           example: "updated@example.com"
+ *         phone:
+ *           type: string
+ *           description: Valid phone number (10–15 characters, digits and symbols)
+ *           example: "204-777-8888"
+ *         department:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 50
+ *           example: "Marketing"
+ *         branchId:
+ *           type: integer
+ *           example: 7
+ */
+
 export const employeeSchemas = {
   create: {
     body: Joi.object({
