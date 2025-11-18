@@ -5,6 +5,7 @@ import branchRoutes from "./api/v1/routes/branchRoutes";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from "cors";
+import setupSwagger from "../config/swagger";
 const app = express();
 dotenv.config();
 // Middleware
@@ -12,7 +13,7 @@ app.use(express.json());
 app.use(morgan("combined"));
 app.use(helmet());
 app.use(cors());
-
+setupSwagger(app);
 // Default root route
 app.get("/", (req, res) => {
   res.send("Hello World!");
