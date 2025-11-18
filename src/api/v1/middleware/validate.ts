@@ -14,7 +14,7 @@ interface ValidationOptions {
     stripQuery?: boolean;
     stripParams?: boolean;
 }
-
+ 
 /**
  * Creates an Express middleware function that validates different parts of the request
  * against separate Joi schemas and strips unknown fields appropriately.
