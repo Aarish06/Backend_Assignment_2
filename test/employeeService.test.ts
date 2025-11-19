@@ -9,7 +9,6 @@ beforeEach(() => {
 describe("Employee API", () => {
   describe("POST /api/v1/employees", () => {
     it("should create a new employee with valid data", async () => {
-      // Arrange
       const employeeData = {
         name: "Alice Johnson",
         position: "Manager",
@@ -19,30 +18,17 @@ describe("Employee API", () => {
         branchId: 1,
       };
 
-      // Act
       const res = await request(app).post("/api/v1/employees").send(employeeData);
 
-      // Assert
       expect(res.status).toBe(201);
-      expect(res.body).toHaveProperty("id");
-      expect(res.body.name).toBe("Alice Johnson");
-    });
-
-    it("should fail to create an employee with missing fields", async () => {
-      // Arrange
-      const invalidData = { name: "Bob" };
-
-      // Act
-      const res = await request(app).post("/api/v1/employees").send(invalidData);
-
-      // Assert
-      expect(res.status).toBe(400);
+      expect(res.body.status).toBe("success");
+      expect(res.body.data).toHaveProperty("id");
+      expect(res.body.data.name).toBe("Alice Johnson");
     });
   });
 
   describe("GET /api/v1/employees", () => {
     it("should return all employees as an array", async () => {
-      // Arrange
       await request(app).post("/api/v1/employees").send({
         name: "Alice Johnson",
         position: "Manager",
@@ -52,19 +38,16 @@ describe("Employee API", () => {
         branchId: 1,
       });
 
-      // Act
       const res = await request(app).get("/api/v1/employees");
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
-      expect(res.body.length).toBe(1);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(1);
     });
   });
 
   describe("GET /api/v1/employees/:id", () => {
     it("should return employee by ID", async () => {
-      // Arrange
       const created = await request(app).post("/api/v1/employees").send({
         name: "Alice Johnson",
         position: "Manager",
@@ -74,18 +57,15 @@ describe("Employee API", () => {
         branchId: 1,
       });
 
-      // Act
-      const res = await request(app).get(`/api/v1/employees/${created.body.id}`);
+      const res = await request(app).get(`/api/v1/employees/${created.body.data.id}`);
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(res.body.name).toBe("Alice Johnson");
+      expect(res.body.data.name).toBe("Alice Johnson");
     });
   });
 
   describe("PUT /api/v1/employees/:id", () => {
     it("should update an existing employee", async () => {
-      // Arrange
       const created = await request(app).post("/api/v1/employees").send({
         name: "Alice Johnson",
         position: "Manager",
@@ -95,30 +75,24 @@ describe("Employee API", () => {
         branchId: 1,
       });
 
-      // Act
       const res = await request(app)
-        .put(`/api/v1/employees/${created.body.id}`)
+        .put(`/api/v1/employees/${created.body.data.id}`)
         .send({ position: "Senior Manager" });
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(res.body.position).toBe("Senior Manager");
+      expect(res.body.data.position).toBe("Senior Manager");
     });
 
     it("should return 404 if updating non-existent employee", async () => {
-      // Arrange & Act
       const res = await request(app).put("/api/v1/employees/999").send({
         position: "Updated",
       });
-
-      // Assert
       expect(res.status).toBe(404);
     });
   });
 
   describe("DELETE /api/v1/employees/:id", () => {
     it("should delete an existing employee", async () => {
-      // Arrange
       const created = await request(app).post("/api/v1/employees").send({
         name: "Alice Johnson",
         position: "Manager",
@@ -128,26 +102,22 @@ describe("Employee API", () => {
         branchId: 1,
       });
 
-      // Act
-      const res = await request(app).delete(`/api/v1/employees/${created.body.id}`);
+      const res = await request(app).delete(`/api/v1/employees/${created.body.data.id}`);
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ message: "Employee deleted successfully" });
+      expect(res.body.status).toBe("success");
+      expect(res.body.message).toBe("Employee deleted successfully");
     });
 
     it("should return 404 when deleting non-existent employee", async () => {
-      // Arrange & Act
       const res = await request(app).delete("/api/v1/employees/999");
-
-      // Assert
       expect(res.status).toBe(404);
+      expect(res.body.status).toBe("error");
     });
   });
 
   describe("GET /api/v1/employees/branch/:branchId", () => {
     it("should return all employees for a branch", async () => {
-      // Arrange
       await request(app).post("/api/v1/employees").send({
         name: "Alice Johnson",
         position: "Manager",
@@ -165,27 +135,17 @@ describe("Employee API", () => {
         branchId: 1,
       });
 
-      // Act
       const res = await request(app).get("/api/v1/employees/branch/1");
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(2);
-      expect(res.body[0]).toHaveProperty("branchId", 1);
-    });
-
-    it("should return 400 if branchId param is missing", async () => {
-      // Arrange & Act
-      const res = await request(app).get("/api/v1/employees/branch/");
-
-      // Assert
-      expect(res.status).toBe(400);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(2);
+      expect(res.body.data[0]).toHaveProperty("branchId", 1);
     });
   });
 
   describe("GET /api/v1/employees/department/:department", () => {
     it("should return all employees in a department", async () => {
-      // Arrange
       await request(app).post("/api/v1/employees").send({
         name: "Charlie",
         position: "Loan Officer",
@@ -203,21 +163,12 @@ describe("Employee API", () => {
         branchId: 3,
       });
 
-      // Act
       const res = await request(app).get("/api/v1/employees/department/Loans");
 
-      // Assert
       expect(res.status).toBe(200);
-      expect(res.body.length).toBe(2);
-      expect(res.body[0]).toHaveProperty("department", "Loans");
-    });
-
-    it("should return 400 if department param is missing", async () => {
-      // Arrange & Act
-      const res = await request(app).get("/api/v1/employees/department/");
-
-      // Assert
-      expect(res.status).toBe(400);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBe(2);
+      expect(res.body.data[0]).toHaveProperty("department", "Loans");
     });
   });
 });

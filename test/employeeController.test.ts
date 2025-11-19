@@ -15,19 +15,19 @@ describe("Employee Controller", () => {
 
   describe("create", () => {
     it("should return 400 if required fields are missing", () => {
-      // Arrange
       req.body = {};
-
-      // Act
       employeeController.create(req as Request, res as Response);
 
-      // Assert
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ error: "Missing required fields" });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "error",
+          error: "Missing required fields",
+        })
+      );
     });
 
     it("should create an employee with valid data", () => {
-      // Arrange
       req.body = {
         name: "Alice",
         position: "Manager",
@@ -37,15 +37,17 @@ describe("Employee Controller", () => {
         branchId: 1,
       };
 
-      // Act
       employeeController.create(req as Request, res as Response);
 
-      // Assert
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: "Alice",
-          position: "Manager",
+          status: "success",
+          message: "Employee created successfully",
+          data: expect.objectContaining({
+            name: "Alice",
+            position: "Manager",
+          }),
         })
       );
     });

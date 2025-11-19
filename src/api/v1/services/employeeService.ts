@@ -1,42 +1,78 @@
 import { Employee } from "../models/employeeModel";
-import { employees as seedEmployees } from "../../../data/employees";
+import {
+  createDocument,
+  getDocuments,
+  getDocumentById,
+  updateDocument,
+  deleteDocument,
+} from "../repositories/firestoreRepository";
 
-let employees: Employee[] = [...seedEmployees];
-let currentId = employees.length ? Math.max(...employees.map(e => e.id)) + 1 : 1;
+const COLLECTION = "employees";
 
 export const employeeService = {
-  create: (data: Omit<Employee, "id">): Employee => {
-    const employee = { id: currentId++, ...data };
-    employees.push(employee);
+  // Create a new employee
+  create: async (data: Omit<Employee, "id">): Promise<Employee> => {
+    const allEmployees = await getDocuments(COLLECTION);
+    const newId =
+      allEmployees.docs.length > 0
+        ? Math.max(...allEmployees.docs.map((d) => d.data().id || 0)) + 1
+        : 1;
+
+    const employee: Employee = { id: newId, ...data };
+    await createDocument<Employee>(COLLECTION, employee);
     return employee;
   },
 
-  getAll: (): Employee[] => employees,
-
-  getById: (id: number): Employee | undefined =>
-    employees.find(e => e.id === id),
-
-  update: (id: number, data: Partial<Employee>): Employee | null => {
-    const employee = employees.find(e => e.id === id);
-    if (!employee) return null;
-    Object.assign(employee, data);
-    return employee;
+  // Get all employees
+  getAll: async (): Promise<Employee[]> => {
+    const snapshot = await getDocuments(COLLECTION);
+    return snapshot.docs.map((doc) => doc.data() as Employee);
   },
 
-  delete: (id: number): boolean => {
-    const index = employees.findIndex(e => e.id === id);
-    if (index < 0) return false;
-    employees.splice(index, 1);
+  // Get employee by ID (numeric)
+ getById: async (id: number): Promise<Employee | null> => {
+  const snapshot = await getDocuments(COLLECTION);
+  const employees = snapshot.docs.map((doc) => doc.data() as Employee);
+  const match = employees.find((e) => e.id === id);
+  return match || null;
+},
+
+
+  // Update employee by ID
+  update: async (id: number, data: Partial<Employee>): Promise<Employee | null> => {
+    const snapshot = await getDocuments(COLLECTION);
+    const doc = snapshot.docs.find((d) => (d.data() as Employee).id === id);
+    if (!doc) return null;
+
+    await updateDocument<Employee>(COLLECTION, doc.id, data);
+    return { ...(doc.data() as Employee), ...data };
+  },
+
+  // Delete employee by ID
+  delete: async (id: number): Promise<boolean> => {
+    const snapshot = await getDocuments(COLLECTION);
+    const doc = snapshot.docs.find((d) => (d.data() as Employee).id === id);
+    if (!doc) return false;
+
+    await deleteDocument(COLLECTION, doc.id);
     return true;
   },
 
-  reset: (): void => {
-    employees = [];
-    currentId = 1;
+  // Get employees by branchId (numeric)
+  getByBranchId: async (branchId: number): Promise<Employee[]> => {
+    const snapshot = await getDocuments(COLLECTION);
+    return snapshot.docs
+      .map((doc) => doc.data() as Employee)
+      .filter((e) => e.branchId === branchId);
   },
-  getByBranchId: (branchId: number): Employee[] =>
-    employees.filter(e => e.branchId === branchId),
 
-  getByDepartment: (department: string): Employee[] =>
-    employees.filter(e => e.department.toLowerCase() === department.toLowerCase()),
+  // Get employees by department
+  getByDepartment: async (department: string): Promise<Employee[]> => {
+    const snapshot = await getDocuments(COLLECTION);
+    return snapshot.docs
+      .map((doc) => doc.data() as Employee)
+      .filter(
+        (e) => e.department?.toLowerCase() === department.toLowerCase()
+      );
+  },
 };
